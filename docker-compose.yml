@@ -1,0 +1,5 @@
+version: '2'
+services:
+  cbackups:
+    container_name: cbackups
+    build: ./collector
