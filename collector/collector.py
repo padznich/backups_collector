@@ -15,7 +15,7 @@ import os
 import re
 from datetime import datetime
 from itertools import groupby
-from shutil import copy2, rmtree
+from shutil import copy2
 
 
 # SETUP
@@ -73,7 +73,7 @@ def group_backups(backups, year=None):
 
         # aggregate outdated backups
         if (current_date - row_date).days > DAYS_LIMIT:
-            outdated_backups.append(backup_name + '_' + _date)
+            outdated_backups.append(_date + '_' + backup_name)
 
         # for yearly backup skip current year
         if year and row_date.year >= current_date.year:
@@ -119,7 +119,7 @@ def copy_backups(path, backups, server_name, folder):
     backup_dst = os.path.join(path, server_name, folder)
     for backup_name, _dates in backups.items():
         for _date in _dates:
-            backup_src = os.path.join(path, server_name, _date + '_' + backup_name)
+            backup_src = os.path.join(path, server_name, 'backup_filtered', _date + '_' + backup_name)
             print(' -> '.join((backup_src, backup_dst)))  # log
             copy2(backup_src, backup_dst)
 
@@ -135,10 +135,11 @@ def remove_backups(path, server_name, backups):
     :param backups: type: list[str].
     :return: type: bool.
     """
+    print('\t\t-= Remove outdated backups for {} =-'.format(server_name))  # log
     for backup in backups:
-        backup_path = os.path.join(path, server_name, backup)
+        backup_path = os.path.join(path, server_name, 'backup_filtered', backup)
         print('Remove outdated backup: %s' % backup_path)
-        rmtree(backup_path, ignore_errors=True)
+        os.remove(backup_path)
     return True
 
 
@@ -152,7 +153,7 @@ def normalize_storage(path):
     """
     for child in os.listdir(path):
 
-        child_path = os.path.join(path, child)
+        child_path = os.path.join(path, child, 'backup_filtered')
         server_files = [f_name for f_name in os.listdir(child_path) if f_name not in ['monthly', 'yearly']]
 
         if server_files:
@@ -162,7 +163,7 @@ def normalize_storage(path):
             monthly_backups_map, outdated_backups = group_backups(server_files)
             if monthly_backups_map:
                 # add aggregation folder
-                add_directory(child_path, 'monthly')
+                add_directory(os.path.join(path, child), 'monthly')
                 copy_backups(path, monthly_backups_map, child, 'monthly')
             print('')  # log
 
@@ -171,7 +172,7 @@ def normalize_storage(path):
             yearly_backups_map, _ = group_backups(server_files, year=True)
             if yearly_backups_map:
                 # add aggregation folder
-                add_directory(child_path, 'yearly')
+                add_directory(os.path.join(path, child), 'yearly')
                 copy_backups(path, yearly_backups_map, child, 'yearly')
 
             # remove outdated backups
