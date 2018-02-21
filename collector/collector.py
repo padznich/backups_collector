@@ -13,9 +13,10 @@ cbackup collector
 """
 import os
 import re
+import subprocess
 from datetime import datetime
 from itertools import groupby
-from shutil import copy2
+from time import sleep
 
 
 # SETUP
@@ -28,6 +29,26 @@ DATE_FORMAT = '%Y-%m-%d--%H-%M-%S'
 
 # incremental backups pattern
 pattern = re.compile(r'^\w+.\d{2}[.\w]+$')
+
+
+def _copy(src, dst):
+    """
+    Used to copy file once.
+    If file already exists in dst -> skip it.
+
+    :param src: type: str. Full path
+    :param dst: type: str. Full path
+    :return: bool.
+    """
+    p = subprocess.Popen(
+        ['cp', '-n', src, dst],
+        stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=False)
+    while p.poll() is None:
+        sleep(0.01)
+    return True
 
 
 def add_directory(root_path, name):
@@ -121,7 +142,7 @@ def copy_backups(path, backups, server_name, folder):
         for _date in _dates:
             backup_src = os.path.join(path, server_name, 'backup_filtered', _date + '_' + backup_name)
             print(' -> '.join((backup_src, backup_dst)))  # log
-            copy2(backup_src, backup_dst)
+            _copy(backup_src, backup_dst)
 
     return True
 
