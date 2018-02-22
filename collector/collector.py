@@ -174,6 +174,11 @@ def normalize_storage(path):
     """
     for child in os.listdir(path):
 
+        # skip NOT $SERVER folders
+        if child in ['archive', 'archive_old', 'lost+found']:
+            print('Skip {}/ folder at BASE_DIR'.format(child))
+            continue
+
         child_path = os.path.join(path, child, 'backup_filtered')
         server_files = [f_name for f_name in os.listdir(child_path) if f_name not in ['monthly', 'yearly']]
 
