@@ -28,7 +28,9 @@ DATE_FORMAT = '%Y-%m-%d--%H-%M-%S'
 
 
 # incremental backups pattern
-pattern = re.compile(r'^\w+.\d{2}[.\w]+$')
+"2018-01-01--00-00-00_etc.00.tar.gz"
+pattern_backup_name = re.compile(r'^\d{4}-\d{2}-\d{2}--\d{2}-\d{2}-\d{2}_\w+.[\d{2}]?[.\w]+$')
+pattern_incremental_backup = re.compile(r'^\w+.\d{2}[.\w]+$')
 
 
 def _copy(src, dst):
@@ -107,7 +109,7 @@ def group_backups(backups, year=None):
             continue
 
         # skip not full incremental backups
-        if pattern.match(backup_name) and '00' not in backup_name:
+        if pattern_incremental_backup.match(backup_name) and '00' not in backup_name:
             print('Skip incremental backup for %s' % _date + '_' + backup_name)
             continue
 
@@ -180,7 +182,7 @@ def normalize_storage(path):
             continue
 
         child_path = os.path.join(path, child, 'backup_filtered')
-        server_files = [f_name for f_name in os.listdir(child_path) if f_name not in ['monthly', 'yearly']]
+        server_files = [f_name for f_name in os.listdir(child_path) if pattern_backup_name.match(f_name)]
 
         if server_files:
 

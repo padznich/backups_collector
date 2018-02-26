@@ -13,6 +13,7 @@ def init_fake_files(s):
         "2016-01-02--00-00-00_etc.00.tar.gz",  # to yearly
         "2017-12-03--00-00-00_etc.00.tar.gz",  # to yearly
 
+        "2as018-01-01--00-00-00_etc.00.tar.gz",  # ignored
         "2018-01-01--00-00-00_etc.00.tar.gz",
         "2018-01-02--00-00-00_etc.01.tar.gz",
         "2018-01-03--00-00-00_etc.02.tar.gz",
